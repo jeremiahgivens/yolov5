@@ -114,6 +114,19 @@ class Annotator:
                             thickness=tf,
                             lineType=cv2.LINE_AA)
 
+    def draw_trace(self, trace, size):
+        for box in trace:
+            x = int((box[0] + box[2]) / 2)
+            y = int((box[1] + box[3]) / 2)
+            min_x = max(x - size, 0)
+            min_y = max(y - size, 0)
+            max_x = min(x + size, self.im.shape[1] - 1)
+            max_y = min(y + size, self.im.shape[0] - 1)
+            p1, p2 = (min_x, min_y), (max_x, max_y)
+            cv2.rectangle(self.im, p1, p2, (0, 0, 255), thickness=-1)
+
+
+
     def masks(self, masks, colors, im_gpu, alpha=0.5, retina_masks=False):
         """Plot masks at once.
         Args:
