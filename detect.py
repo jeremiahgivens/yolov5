@@ -79,6 +79,7 @@ def run(
         half=False,  # use FP16 half-precision inference
         dnn=False,  # use OpenCV DNN for ONNX inference
         vid_stride=1,  # video frame-rate stride
+        job_instance=None
 ):
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
@@ -113,11 +114,13 @@ def run(
 
     # A place for us to store the center of every detection, for drawing our trace.
     trace = []
+    frame = 0
 
     # Run inference
     model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
     for path, im, im0s, vid_cap, s in dataset:
+        job_instance.update_state(state='PROGRESS', meta={'done': int(s.split('/')[1].split('(')[1]), 'total': int(s.split(')')[0].split('/')[2])})
         with dt[0]:
             im = torch.from_numpy(im).to(model.device)
             im = im.half() if model.fp16 else im.float()  # uint8 to fp16/32
